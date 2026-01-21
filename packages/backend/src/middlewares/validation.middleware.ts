@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import {
   ListUsersQueryParams,
   ListUsersFilters,
+  GetUserByIdParams,
   Gender,
   SortByField,
   SortOrder,
@@ -12,11 +13,12 @@ import {
 } from '../types/user';
 import { ApiResponse, ValidationErrorDetail } from '../types/common/api.types';
 
-// Extend Express Request to include validated filters
+// Extend Express Request to include validated data
 declare global {
   namespace Express {
     interface Request {
       validatedFilters?: ListUsersFilters;
+      validatedGetUserParams?: GetUserByIdParams;
     }
   }
 }
@@ -121,4 +123,46 @@ function parsePositiveInteger(value: string | undefined, defaultValue: number): 
 function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
   if (!value) return defaultValue;
   return value.toLowerCase() === 'true';
+}
+
+/**
+ * Validates path parameter ID for Get User by ID endpoint
+ * Follows SRP - only handles ID validation
+ */
+export function validateGetUserById(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  const errors: ValidationErrorDetail[] = [];
+  const idParam = req.params.id as string;
+  const id = parseInt(idParam, 10);
+
+  if (isNaN(id) || id < 1) {
+    errors.push({ field: 'id', message: 'ID must be a positive integer' });
+  }
+
+  if (errors.length > 0) {
+    const response: ApiResponse<null> = {
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Validation failed',
+        details: errors,
+      },
+    };
+    res.status(400).json(response);
+    return;
+  }
+
+  const includeDeletedParam = typeof req.query.includeDeleted === 'string'
+    ? req.query.includeDeleted
+    : undefined;
+
+  req.validatedGetUserParams = {
+    id,
+    includeDeleted: parseBoolean(includeDeletedParam, false),
+  };
+
+  next();
 }

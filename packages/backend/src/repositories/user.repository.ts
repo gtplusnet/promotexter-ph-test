@@ -4,6 +4,13 @@ import { FindManyUsersOptions } from '../types/user';
 
 export class UserRepository {
   /**
+   * Find a single user by ID
+   */
+  async findById(id: number): Promise<User | null> {
+    return prisma.user.findUnique({ where: { id } });
+  }
+
+  /**
    * Find multiple users with filtering, pagination, and sorting
    */
   async findMany(options: FindManyUsersOptions): Promise<User[]> {

@@ -49,3 +49,9 @@ export interface UserWhereInput {
 export interface UserOrderByInput {
   [key: string]: 'asc' | 'desc';
 }
+
+// Get User by ID types
+export interface GetUserByIdParams {
+  id: number;
+  includeDeleted: boolean;
+}

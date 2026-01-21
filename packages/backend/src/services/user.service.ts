@@ -8,9 +8,23 @@ import {
   FindManyUsersOptions,
 } from '../types/user';
 import { PaginationInfo } from '../types/common/api.types';
+import { ApiError } from '../middlewares/error.middleware';
 
 export class UserService {
   constructor(private readonly repository: UserRepository) {}
+
+  /**
+   * Get a single user by ID
+   */
+  async getUserById(id: number, includeDeleted: boolean = false): Promise<User> {
+    const user = await this.repository.findById(id);
+
+    if (!user || (user.isDeleted && !includeDeleted)) {
+      throw new ApiError(404, 'USER_NOT_FOUND', `User with ID ${id} not found`);
+    }
+
+    return user;
+  }
 
   /**
    * List users with filtering, search, pagination, and sorting

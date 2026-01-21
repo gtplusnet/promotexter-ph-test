@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { userController } from '../controllers/user.controller';
-import { validateListUsersQuery } from '../middlewares/validation.middleware';
+import { validateListUsersQuery, validateGetUserById } from '../middlewares/validation.middleware';
 import { asyncHandler } from '../middlewares/error.middleware';
 
 const router = Router();
@@ -22,6 +22,22 @@ router.get(
   '/',
   validateListUsersQuery,
   asyncHandler((req, res) => userController.listUsers(req, res))
+);
+
+/**
+ * GET /api/users/:id
+ * Get a single user by ID
+ *
+ * Path Parameters:
+ * - id: User ID (positive integer)
+ *
+ * Query Parameters:
+ * - includeDeleted: Allow fetching soft-deleted records (default: false)
+ */
+router.get(
+  '/:id',
+  validateGetUserById,
+  asyncHandler((req, res) => userController.getUserById(req, res))
 );
 
 export default router;

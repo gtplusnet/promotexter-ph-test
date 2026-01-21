@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { userService, UserService } from '../services/user.service';
 import { ApiResponse, PaginationInfo } from '../types/common/api.types';
-import { UserDto, toUserDtoList } from '../types/user.dto';
+import { UserDto, toUserDto, toUserDtoList } from '../types/user.dto';
 
 /**
  * Response type for list users endpoint
@@ -17,6 +17,21 @@ interface ListUsersResponseDto {
  */
 export class UserController {
   constructor(private readonly service: UserService) {}
+
+  /**
+   * GET /api/users/:id - Get a single user by ID
+   */
+  async getUserById(req: Request, res: Response): Promise<void> {
+    const { id, includeDeleted } = req.validatedGetUserParams!;
+    const user = await this.service.getUserById(id, includeDeleted);
+
+    const response: ApiResponse<UserDto> = {
+      success: true,
+      data: toUserDto(user),
+    };
+
+    res.status(200).json(response);
+  }
 
   /**
    * GET /api/users - List users with pagination, filtering, and search
