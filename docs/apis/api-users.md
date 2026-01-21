@@ -465,19 +465,27 @@ All responses follow a consistent JSON structure:
 ```
 packages/backend/src/
 ├── controllers/
-│   └── user.controller.ts    # Request handlers
+│   └── user.controller.ts        # Request handlers
 ├── services/
-│   └── user.service.ts       # Business logic
+│   └── user.service.ts           # Business logic
 ├── repositories/
-│   └── user.repository.ts    # Database operations
+│   └── user.repository.ts        # Database operations
 ├── routes/
-│   └── user.routes.ts        # Route definitions
+│   └── user.routes.ts            # Route definitions
 ├── middlewares/
-│   └── validation.middleware.ts
+│   ├── validation.middleware.ts  # Input validation
+│   └── error.middleware.ts       # Global error handling
 ├── types/
-│   └── user.types.ts         # TypeScript interfaces
+│   ├── user/
+│   │   ├── user.enums.ts         # Gender, SortByField, SortOrder
+│   │   ├── user.interfaces.ts    # Request/Response interfaces
+│   │   ├── user.constants.ts     # Pagination defaults, valid values
+│   │   └── index.ts              # Barrel file (re-exports)
+│   ├── common/
+│   │   └── api.types.ts          # Shared API response types
+│   └── user.dto.ts               # Data Transfer Objects
 └── lib/
-    └── prisma.ts             # Prisma client instance
+    └── prisma.ts                 # Prisma client instance
 ```
 
 ## Note: I created this documentation with the help of AI (My strategy is to plan things ahead using AI before engaging in to the development)
