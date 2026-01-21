@@ -15,30 +15,35 @@ async function main() {
       email: 'juan.delacruz@email.com',
       contactNumber: '+63 917 123 4567',
       gender: 'male',
+      isDeleted: false,
     },
     {
       fullName: 'Maria Santos',
       email: 'maria.santos@email.com',
       contactNumber: '+63 918 234 5678',
       gender: 'female',
+      isDeleted: false,
     },
     {
       fullName: 'Carlos Reyes',
       email: 'carlos.reyes@email.com',
       contactNumber: '+63 919 345 6789',
       gender: 'male',
+      isDeleted: false,
     },
     {
       fullName: 'Ana Garcia',
       email: 'ana.garcia@email.com',
       contactNumber: '+63 920 456 7890',
       gender: 'female',
+      isDeleted: false,
     },
     {
       fullName: 'Miguel Torres',
       email: 'miguel.torres@email.com',
       contactNumber: '+63 921 567 8901',
       gender: 'male',
+      isDeleted: false,
     },
   ];
 
