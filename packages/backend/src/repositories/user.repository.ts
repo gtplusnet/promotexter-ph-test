@@ -1,6 +1,6 @@
 import prisma from '../lib/prisma';
 import { User } from '@prisma/client';
-import { FindManyUsersOptions } from '../types/user';
+import { FindManyUsersOptions, CreateUserBody } from '../types/user';
 
 export class UserRepository {
   /**
@@ -8,6 +8,20 @@ export class UserRepository {
    */
   async findById(id: number): Promise<User | null> {
     return prisma.user.findUnique({ where: { id } });
+  }
+
+  /**
+   * Find a single user by email
+   */
+  async findByEmail(email: string): Promise<User | null> {
+    return prisma.user.findUnique({ where: { email } });
+  }
+
+  /**
+   * Create a new user
+   */
+  async create(data: CreateUserBody): Promise<User> {
+    return prisma.user.create({ data });
   }
 
   /**

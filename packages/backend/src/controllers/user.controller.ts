@@ -19,6 +19,21 @@ export class UserController {
   constructor(private readonly service: UserService) {}
 
   /**
+   * POST /api/users - Create a new user
+   */
+  async createUser(req: Request, res: Response): Promise<void> {
+    const body = req.validatedCreateUserBody!;
+    const user = await this.service.createUser(body);
+
+    const response: ApiResponse<UserDto> = {
+      success: true,
+      data: toUserDto(user),
+    };
+
+    res.status(201).json(response);
+  }
+
+  /**
    * GET /api/users/:id - Get a single user by ID
    */
   async getUserById(req: Request, res: Response): Promise<void> {

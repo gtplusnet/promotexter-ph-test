@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { userController } from '../controllers/user.controller';
-import { validateListUsersQuery, validateGetUserById } from '../middlewares/validation.middleware';
+import { validateListUsersQuery, validateGetUserById, validateCreateUser } from '../middlewares/validation.middleware';
 import { asyncHandler } from '../middlewares/error.middleware';
 
 const router = Router();
@@ -22,6 +22,22 @@ router.get(
   '/',
   validateListUsersQuery,
   asyncHandler((req, res) => userController.listUsers(req, res))
+);
+
+/**
+ * POST /api/users
+ * Create a new user
+ *
+ * Request Body:
+ * - fullName: string (required, 1-255 chars)
+ * - email: string (required, valid email, unique)
+ * - contactNumber: string (optional, max 50 chars)
+ * - gender: string (optional, male/female)
+ */
+router.post(
+  '/',
+  validateCreateUser,
+  asyncHandler((req, res) => userController.createUser(req, res))
 );
 
 /**

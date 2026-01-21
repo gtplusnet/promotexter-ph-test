@@ -55,3 +55,11 @@ export interface GetUserByIdParams {
   id: number;
   includeDeleted: boolean;
 }
+
+// Create User types
+export interface CreateUserBody {
+  fullName: string;
+  email: string;
+  contactNumber?: string | null;
+  gender?: string | null;
+}

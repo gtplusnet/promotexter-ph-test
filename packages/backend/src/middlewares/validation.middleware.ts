@@ -3,6 +3,7 @@ import {
   ListUsersQueryParams,
   ListUsersFilters,
   GetUserByIdParams,
+  CreateUserBody,
   Gender,
   SortByField,
   SortOrder,
@@ -19,6 +20,7 @@ declare global {
     interface Request {
       validatedFilters?: ListUsersFilters;
       validatedGetUserParams?: GetUserByIdParams;
+      validatedCreateUserBody?: CreateUserBody;
     }
   }
 }
@@ -165,4 +167,79 @@ export function validateGetUserById(
   };
 
   next();
+}
+
+/**
+ * Validates request body for Create User endpoint
+ * Follows SRP - only handles create user validation
+ */
+export function validateCreateUser(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  const errors: ValidationErrorDetail[] = [];
+  const body = req.body || {};
+
+  // Validate fullName (required, 1-255 chars)
+  if (!body.fullName || typeof body.fullName !== 'string') {
+    errors.push({ field: 'fullName', message: 'Full name is required' });
+  } else if (body.fullName.trim().length === 0) {
+    errors.push({ field: 'fullName', message: 'Full name cannot be empty' });
+  } else if (body.fullName.length > 255) {
+    errors.push({ field: 'fullName', message: 'Full name must be at most 255 characters' });
+  }
+
+  // Validate email (required, valid format)
+  if (!body.email || typeof body.email !== 'string') {
+    errors.push({ field: 'email', message: 'Email is required' });
+  } else if (!isValidEmail(body.email)) {
+    errors.push({ field: 'email', message: 'Email must be a valid email address' });
+  }
+
+  // Validate contactNumber (optional, max 50 chars)
+  if (body.contactNumber !== undefined && body.contactNumber !== null) {
+    if (typeof body.contactNumber !== 'string') {
+      errors.push({ field: 'contactNumber', message: 'Contact number must be a string' });
+    } else if (body.contactNumber.length > 50) {
+      errors.push({ field: 'contactNumber', message: 'Contact number must be at most 50 characters' });
+    }
+  }
+
+  // Validate gender (optional, must be male/female)
+  if (body.gender !== undefined && body.gender !== null) {
+    const genderLower = typeof body.gender === 'string' ? body.gender.toLowerCase() : '';
+    if (!VALID_GENDERS.includes(genderLower as Gender)) {
+      errors.push({ field: 'gender', message: `Gender must be one of: ${VALID_GENDERS.join(', ')}` });
+    }
+  }
+
+  if (errors.length > 0) {
+    const response: ApiResponse<null> = {
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Validation failed',
+        details: errors,
+      },
+    };
+    res.status(400).json(response);
+    return;
+  }
+
+  req.validatedCreateUserBody = {
+    fullName: body.fullName.trim(),
+    email: body.email.toLowerCase().trim(),
+    contactNumber: body.contactNumber?.trim() || null,
+    gender: body.gender?.toLowerCase() || null,
+  };
+
+  next();
+}
+
+/**
+ * Simple email validation helper
+ */
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }

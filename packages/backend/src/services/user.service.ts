@@ -6,12 +6,26 @@ import {
   UserWhereInput,
   UserOrderByInput,
   FindManyUsersOptions,
+  CreateUserBody,
 } from '../types/user';
 import { PaginationInfo } from '../types/common/api.types';
 import { ApiError } from '../middlewares/error.middleware';
 
 export class UserService {
   constructor(private readonly repository: UserRepository) {}
+
+  /**
+   * Create a new user
+   */
+  async createUser(data: CreateUserBody): Promise<User> {
+    // Check for duplicate email
+    const existing = await this.repository.findByEmail(data.email);
+    if (existing) {
+      throw new ApiError(409, 'EMAIL_EXISTS', 'A user with this email already exists');
+    }
+
+    return this.repository.create(data);
+  }
 
   /**
    * Get a single user by ID
