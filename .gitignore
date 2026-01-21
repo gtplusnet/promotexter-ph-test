@@ -81,6 +81,10 @@ debug/
 # Package manager locks (keep yarn.lock, ignore others)
 package-lock.json
 
+# SQLite database files
+*.db
+*.db-journal
+
 # Misc
 *.local
 .turbo
