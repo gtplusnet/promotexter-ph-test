@@ -539,4 +539,102 @@ describe('UserService', () => {
       expect(mockRepository.restore).not.toHaveBeenCalled();
     });
   });
+
+  describe('hardDeleteUser', () => {
+    it('should hard delete user successfully', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(createMockUser({ id: 1 }));
+      mockRepository.hardDelete.mockResolvedValue(undefined);
+      const service = new UserService(mockRepository as any);
+
+      await service.hardDeleteUser(1);
+
+      expect(mockRepository.hardDelete).toHaveBeenCalledWith(1);
+    });
+
+    it('should call repository.findById with correct id', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(createMockUser());
+      mockRepository.hardDelete.mockResolvedValue(undefined);
+      const service = new UserService(mockRepository as any);
+
+      await service.hardDeleteUser(5);
+
+      expect(mockRepository.findById).toHaveBeenCalledWith(5);
+    });
+
+    it('should call repository.hardDelete with correct id', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(createMockUser());
+      mockRepository.hardDelete.mockResolvedValue(undefined);
+      const service = new UserService(mockRepository as any);
+
+      await service.hardDeleteUser(10);
+
+      expect(mockRepository.hardDelete).toHaveBeenCalledWith(10);
+    });
+
+    it('should throw USER_NOT_FOUND when user does not exist', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(null);
+      const service = new UserService(mockRepository as any);
+
+      await expect(service.hardDeleteUser(999)).rejects.toThrow(ApiError);
+    });
+
+    it('should throw error with correct message when user not found', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(null);
+      const service = new UserService(mockRepository as any);
+
+      await expect(service.hardDeleteUser(999)).rejects.toThrow('User with ID 999 not found');
+    });
+
+    it('should not call repository.hardDelete when user not found', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(null);
+      const service = new UserService(mockRepository as any);
+
+      try {
+        await service.hardDeleteUser(999);
+      } catch (e) {
+        // Expected to throw
+      }
+
+      expect(mockRepository.hardDelete).not.toHaveBeenCalled();
+    });
+
+    it('should allow hard deleting an active user', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(createMockUser({ isDeleted: false }));
+      mockRepository.hardDelete.mockResolvedValue(undefined);
+      const service = new UserService(mockRepository as any);
+
+      await service.hardDeleteUser(1);
+
+      expect(mockRepository.hardDelete).toHaveBeenCalledWith(1);
+    });
+
+    it('should allow hard deleting a soft-deleted user', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(createMockUser({ isDeleted: true }));
+      mockRepository.hardDelete.mockResolvedValue(undefined);
+      const service = new UserService(mockRepository as any);
+
+      await service.hardDeleteUser(1);
+
+      expect(mockRepository.hardDelete).toHaveBeenCalledWith(1);
+    });
+
+    it('should return void on successful deletion', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(createMockUser());
+      mockRepository.hardDelete.mockResolvedValue(undefined);
+      const service = new UserService(mockRepository as any);
+
+      const result = await service.hardDeleteUser(1);
+
+      expect(result).toBeUndefined();
+    });
+  });
 });
