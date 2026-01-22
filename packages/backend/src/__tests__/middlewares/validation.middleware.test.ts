@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { validateCreateUser, validateListUsersQuery, validateGetUserById } from '../../middlewares/validation.middleware';
+import { validateCreateUser, validateListUsersQuery, validateGetUserById, validateUpdateUser } from '../../middlewares/validation.middleware';
 import { createMockRequest, createMockResponse, createMockNext } from '../utils/test-helpers';
 
 describe('validateCreateUser', () => {
@@ -386,5 +386,262 @@ describe('validateGetUserById', () => {
     validateGetUserById(req as Request, res as Response, next);
 
     expect(req.validatedGetUserParams.includeDeleted).toBe(false);
+  });
+});
+
+describe('validateUpdateUser', () => {
+  it('should call next() with valid id and body', () => {
+    const req = createMockRequest({
+      params: { id: '1' },
+      body: { fullName: 'Updated Name' },
+    });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalled();
+  });
+
+  it('should attach validatedUpdateUserParams and validatedUpdateUserBody to request', () => {
+    const req = createMockRequest({
+      params: { id: '5' },
+      body: { fullName: 'Updated Name', email: 'NEW@EXAMPLE.COM' },
+    }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(req.validatedUpdateUserParams).toEqual({ id: 5 });
+    expect(req.validatedUpdateUserBody).toEqual({
+      fullName: 'Updated Name',
+      email: 'new@example.com',
+    });
+  });
+
+  it('should return 400 when id is not a number', () => {
+    const req = createMockRequest({
+      params: { id: 'abc' },
+      body: { fullName: 'Test' },
+    });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 when id is less than 1', () => {
+    const req = createMockRequest({
+      params: { id: '0' },
+      body: { fullName: 'Test' },
+    });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it('should accept partial updates with only fullName', () => {
+    const req = createMockRequest({
+      params: { id: '1' },
+      body: { fullName: 'Only Name' },
+    }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(req.validatedUpdateUserBody).toEqual({ fullName: 'Only Name' });
+  });
+
+  it('should accept partial updates with only email', () => {
+    const req = createMockRequest({
+      params: { id: '1' },
+      body: { email: 'only@email.com' },
+    }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(req.validatedUpdateUserBody).toEqual({ email: 'only@email.com' });
+  });
+
+  it('should accept partial updates with only contactNumber', () => {
+    const req = createMockRequest({
+      params: { id: '1' },
+      body: { contactNumber: '123456' },
+    }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(req.validatedUpdateUserBody).toEqual({ contactNumber: '123456' });
+  });
+
+  it('should accept partial updates with only gender', () => {
+    const req = createMockRequest({
+      params: { id: '1' },
+      body: { gender: 'female' },
+    }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(req.validatedUpdateUserBody).toEqual({ gender: 'female' });
+  });
+
+  it('should return 400 when fullName is empty string', () => {
+    const req = createMockRequest({
+      params: { id: '1' },
+      body: { fullName: '   ' },
+    });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it('should return 400 when fullName exceeds 255 characters', () => {
+    const req = createMockRequest({
+      params: { id: '1' },
+      body: { fullName: 'a'.repeat(256) },
+    });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it('should return 400 when email format is invalid', () => {
+    const req = createMockRequest({
+      params: { id: '1' },
+      body: { email: 'invalid-email' },
+    });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it('should return 400 when gender is invalid', () => {
+    const req = createMockRequest({
+      params: { id: '1' },
+      body: { gender: 'other' },
+    });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it('should return 400 when contactNumber exceeds 50 characters', () => {
+    const req = createMockRequest({
+      params: { id: '1' },
+      body: { contactNumber: 'a'.repeat(51) },
+    });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it('should trim and lowercase email', () => {
+    const req = createMockRequest({
+      params: { id: '1' },
+      body: { email: 'UPDATED@EXAMPLE.COM' },
+    }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(req.validatedUpdateUserBody.email).toBe('updated@example.com');
+  });
+
+  it('should trim fullName', () => {
+    const req = createMockRequest({
+      params: { id: '1' },
+      body: { fullName: '  Trimmed Name  ' },
+    }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(req.validatedUpdateUserBody.fullName).toBe('Trimmed Name');
+  });
+
+  it('should allow updating multiple fields at once', () => {
+    const req = createMockRequest({
+      params: { id: '1' },
+      body: {
+        fullName: 'Full Update',
+        email: 'full@update.com',
+        contactNumber: '987654',
+        gender: 'male',
+      },
+    }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(req.validatedUpdateUserBody).toEqual({
+      fullName: 'Full Update',
+      email: 'full@update.com',
+      contactNumber: '987654',
+      gender: 'male',
+    });
+  });
+
+  it('should accept empty body for partial updates', () => {
+    const req = createMockRequest({
+      params: { id: '1' },
+      body: {},
+    }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(req.validatedUpdateUserBody).toEqual({});
+  });
+
+  it('should lowercase gender', () => {
+    const req = createMockRequest({
+      params: { id: '1' },
+      body: { gender: 'FEMALE' },
+    }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUpdateUser(req as Request, res as Response, next);
+
+    expect(req.validatedUpdateUserBody.gender).toBe('female');
   });
 });

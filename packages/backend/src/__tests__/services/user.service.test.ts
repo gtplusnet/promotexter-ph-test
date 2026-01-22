@@ -251,4 +251,126 @@ describe('UserService', () => {
       expect(result).toEqual(mockUser);
     });
   });
+
+  describe('updateUser', () => {
+    it('should update user with valid data', async () => {
+      const mockRepository = createMockRepository();
+      const existingUser = createMockUser({ id: 1, email: 'old@example.com', isDeleted: false });
+      const updatedUser = createMockUser({ id: 1, fullName: 'Updated Name', email: 'old@example.com' });
+      mockRepository.findById.mockResolvedValue(existingUser);
+      mockRepository.update.mockResolvedValue(updatedUser);
+      const service = new UserService(mockRepository as any);
+
+      const result = await service.updateUser(1, { fullName: 'Updated Name' });
+
+      expect(result.fullName).toBe('Updated Name');
+    });
+
+    it('should call repository.findById with correct id', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(createMockUser({ isDeleted: false }));
+      mockRepository.update.mockResolvedValue(createMockUser());
+      const service = new UserService(mockRepository as any);
+
+      await service.updateUser(5, { fullName: 'New Name' });
+
+      expect(mockRepository.findById).toHaveBeenCalledWith(5);
+    });
+
+    it('should call repository.update with correct data', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(createMockUser({ isDeleted: false }));
+      mockRepository.update.mockResolvedValue(createMockUser());
+      const service = new UserService(mockRepository as any);
+      const updateData = { fullName: 'New Name', contactNumber: '123456' };
+
+      await service.updateUser(1, updateData);
+
+      expect(mockRepository.update).toHaveBeenCalledWith(1, updateData);
+    });
+
+    it('should throw USER_NOT_FOUND when user does not exist', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(null);
+      const service = new UserService(mockRepository as any);
+
+      await expect(service.updateUser(999, { fullName: 'Test' })).rejects.toThrow(ApiError);
+    });
+
+    it('should throw error with correct message when user not found', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(null);
+      const service = new UserService(mockRepository as any);
+
+      await expect(service.updateUser(999, { fullName: 'Test' })).rejects.toThrow('User with ID 999 not found');
+    });
+
+    it('should throw USER_NOT_FOUND when user is deleted', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(createMockUser({ isDeleted: true }));
+      const service = new UserService(mockRepository as any);
+
+      await expect(service.updateUser(1, { fullName: 'Test' })).rejects.toThrow(ApiError);
+    });
+
+    it('should check for duplicate email when email is being changed', async () => {
+      const mockRepository = createMockRepository();
+      const existingUser = createMockUser({ id: 1, email: 'old@example.com', isDeleted: false });
+      mockRepository.findById.mockResolvedValue(existingUser);
+      mockRepository.findByEmail.mockResolvedValue(null);
+      mockRepository.update.mockResolvedValue(createMockUser());
+      const service = new UserService(mockRepository as any);
+
+      await service.updateUser(1, { email: 'new@example.com' });
+
+      expect(mockRepository.findByEmail).toHaveBeenCalledWith('new@example.com');
+    });
+
+    it('should throw EMAIL_EXISTS when new email is already taken', async () => {
+      const mockRepository = createMockRepository();
+      const existingUser = createMockUser({ id: 1, email: 'old@example.com', isDeleted: false });
+      const userWithNewEmail = createMockUser({ id: 2, email: 'taken@example.com' });
+      mockRepository.findById.mockResolvedValue(existingUser);
+      mockRepository.findByEmail.mockResolvedValue(userWithNewEmail);
+      const service = new UserService(mockRepository as any);
+
+      await expect(
+        service.updateUser(1, { email: 'taken@example.com' })
+      ).rejects.toThrow('A user with this email already exists');
+    });
+
+    it('should not check email duplication when email is not being changed', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(createMockUser({ email: 'same@example.com', isDeleted: false }));
+      mockRepository.update.mockResolvedValue(createMockUser());
+      const service = new UserService(mockRepository as any);
+
+      await service.updateUser(1, { fullName: 'New Name' });
+
+      expect(mockRepository.findByEmail).not.toHaveBeenCalled();
+    });
+
+    it('should not check email duplication when email remains the same', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(createMockUser({ email: 'same@example.com', isDeleted: false }));
+      mockRepository.update.mockResolvedValue(createMockUser());
+      const service = new UserService(mockRepository as any);
+
+      await service.updateUser(1, { email: 'same@example.com' });
+
+      expect(mockRepository.findByEmail).not.toHaveBeenCalled();
+    });
+
+    it('should allow updating multiple fields at once', async () => {
+      const mockRepository = createMockRepository();
+      mockRepository.findById.mockResolvedValue(createMockUser({ isDeleted: false }));
+      mockRepository.update.mockResolvedValue(createMockUser());
+      const service = new UserService(mockRepository as any);
+      const updateData = { fullName: 'New Name', contactNumber: '123456', gender: 'female' as Gender };
+
+      await service.updateUser(1, updateData);
+
+      expect(mockRepository.update).toHaveBeenCalledWith(1, updateData);
+    });
+  });
 });
