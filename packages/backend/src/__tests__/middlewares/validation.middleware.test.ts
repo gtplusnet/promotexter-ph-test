@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { validateCreateUser, validateListUsersQuery, validateGetUserById, validateUpdateUser } from '../../middlewares/validation.middleware';
+import { validateCreateUser, validateListUsersQuery, validateGetUserById, validateUpdateUser, validateUserIdParam } from '../../middlewares/validation.middleware';
 import { createMockRequest, createMockResponse, createMockNext } from '../utils/test-helpers';
 
 describe('validateCreateUser', () => {
@@ -643,5 +643,69 @@ describe('validateUpdateUser', () => {
     validateUpdateUser(req as Request, res as Response, next);
 
     expect(req.validatedUpdateUserBody.gender).toBe('female');
+  });
+});
+
+describe('validateUserIdParam', () => {
+  it('should call next() with valid id parameter', () => {
+    const req = createMockRequest({ params: { id: '1' } });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUserIdParam(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalled();
+  });
+
+  it('should attach validatedUserIdParam to request', () => {
+    const req = createMockRequest({ params: { id: '10' } }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUserIdParam(req as Request, res as Response, next);
+
+    expect(req.validatedUserIdParam).toEqual({ id: 10 });
+  });
+
+  it('should return 400 when id is not a number', () => {
+    const req = createMockRequest({ params: { id: 'abc' } });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUserIdParam(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 when id is less than 1', () => {
+    const req = createMockRequest({ params: { id: '0' } });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUserIdParam(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it('should return 400 when id is negative', () => {
+    const req = createMockRequest({ params: { id: '-10' } });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUserIdParam(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it('should parse string id to integer', () => {
+    const req = createMockRequest({ params: { id: '42' } }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateUserIdParam(req as Request, res as Response, next);
+
+    expect(req.validatedUserIdParam.id).toBe(42);
+    expect(typeof req.validatedUserIdParam.id).toBe('number');
   });
 });
