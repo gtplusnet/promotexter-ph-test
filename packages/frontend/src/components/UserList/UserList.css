@@ -1,0 +1,69 @@
+/* Material Design 3 User List */
+
+.user-list {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--md-sys-spacing-6);
+  min-height: 100vh;
+}
+
+.user-list__header {
+  margin-bottom: var(--md-sys-spacing-8);
+}
+
+.user-list__header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--md-sys-spacing-4);
+}
+
+.user-list__title {
+  color: var(--md-sys-color-on-background);
+  font-size: var(--md-sys-typescale-headline-large-size);
+  font-weight: var(--md-sys-typescale-headline-large-weight);
+  line-height: var(--md-sys-typescale-headline-large-line-height);
+  margin-bottom: var(--md-sys-spacing-2);
+}
+
+.user-list__subtitle {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-body-large-size);
+  line-height: var(--md-sys-typescale-body-large-line-height);
+}
+
+.user-list__controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-4);
+  margin-bottom: var(--md-sys-spacing-6);
+}
+
+.user-list__content {
+  margin-bottom: var(--md-sys-spacing-6);
+}
+
+.user-list__pagination {
+  display: flex;
+  justify-content: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .user-list {
+    padding: var(--md-sys-spacing-4);
+  }
+
+  .user-list__header {
+    margin-bottom: var(--md-sys-spacing-6);
+  }
+
+  .user-list__header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .user-list__title {
+    font-size: var(--md-sys-typescale-headline-medium-size);
+  }
+}

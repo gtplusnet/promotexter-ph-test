@@ -1,0 +1,34 @@
+/* Material Design 3 Icon Button Styles */
+
+.md-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--md-sys-component-icon-button-size);
+  height: var(--md-sys-component-icon-button-size);
+  padding: 0;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  background-color: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  cursor: pointer;
+  transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+  user-select: none;
+}
+
+.md-icon-button:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+}
+
+.md-icon-button:active:not(:disabled) {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+}
+
+.md-icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.md-icon-button .material-symbols-outlined {
+  font-size: var(--md-sys-component-icon-size);
+}

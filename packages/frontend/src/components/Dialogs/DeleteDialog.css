@@ -1,0 +1,24 @@
+/* Delete Dialog Styles */
+
+.delete-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: var(--md-sys-spacing-3);
+}
+
+.delete-dialog__message {
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md-sys-typescale-body-large-size);
+  line-height: var(--md-sys-typescale-body-large-line-height);
+}
+
+.delete-dialog__message strong {
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+}
+
+.delete-dialog__info {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-body-medium-size);
+  line-height: var(--md-sys-typescale-body-medium-line-height);
+}

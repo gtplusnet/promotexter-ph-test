@@ -1,35 +1,108 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import type { User, UserFormData } from './types/user.types';
+import { UserList } from './components/UserList/UserList';
+import { CreateUserModal } from './components/UserForms/CreateUserModal';
+import { EditUserModal } from './components/UserForms/EditUserModal';
+import { DeleteDialog } from './components/Dialogs/DeleteDialog';
+import { RestoreDialog } from './components/Dialogs/RestoreDialog';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isRestoreDialogOpen, setIsRestoreDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  const handleCreateUser = () => {
+    setIsCreateModalOpen(true);
+  };
+
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setIsEditModalOpen(true);
+  };
+
+  const handleDeleteUser = (user: User) => {
+    setSelectedUser(user);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const handleRestoreUser = (user: User) => {
+    setSelectedUser(user);
+    setIsRestoreDialogOpen(true);
+  };
+
+  const handleCreate = (data: UserFormData) => {
+    console.log('Create user:', data);
+    // TODO: API integration
+  };
+
+  const handleUpdate = (data: UserFormData) => {
+    console.log('Update user:', selectedUser?.id, data);
+    // TODO: API integration
+  };
+
+  const handleConfirmDelete = () => {
+    console.log('Delete user:', selectedUser?.id);
+    setIsDeleteDialogOpen(false);
+    setSelectedUser(null);
+    // TODO: API integration
+  };
+
+  const handleConfirmRestore = () => {
+    console.log('Restore user:', selectedUser?.id);
+    setIsRestoreDialogOpen(false);
+    setSelectedUser(null);
+    // TODO: API integration
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="app">
+      <UserList
+        onCreateUser={handleCreateUser}
+        onEditUser={handleEditUser}
+        onDeleteUser={handleDeleteUser}
+        onRestoreUser={handleRestoreUser}
+      />
+
+      <CreateUserModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreate={handleCreate}
+      />
+
+      <EditUserModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedUser(null);
+        }}
+        onUpdate={handleUpdate}
+        user={selectedUser}
+      />
+
+      <DeleteDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setSelectedUser(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        user={selectedUser}
+      />
+
+      <RestoreDialog
+        isOpen={isRestoreDialogOpen}
+        onClose={() => {
+          setIsRestoreDialogOpen(false);
+          setSelectedUser(null);
+        }}
+        onConfirm={handleConfirmRestore}
+        user={selectedUser}
+      />
+    </div>
+  );
 }
 
-export default App
+export default App;

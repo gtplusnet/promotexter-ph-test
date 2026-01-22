@@ -1,0 +1,95 @@
+/* Material Design 3 Table Row */
+
+.user-table-row {
+  transition: background-color var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-standard);
+}
+
+.user-table-row:hover {
+  background-color: color-mix(in srgb, var(--md-sys-color-primary) 4%, transparent);
+}
+
+.user-table-row--deleted {
+  opacity: 0.6;
+}
+
+.user-table-row--deleted .user-table-row__cell--name,
+.user-table-row--deleted .user-table-row__cell--email {
+  text-decoration: line-through;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.user-table-row__cell {
+  padding: var(--md-sys-spacing-2) var(--md-sys-spacing-3);
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md-sys-typescale-body-small-size);
+  line-height: var(--md-sys-typescale-body-small-line-height);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.user-table-row__cell--id {
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: 500;
+  width: 60px;
+}
+
+.user-table-row__cell--name {
+  font-weight: 500;
+  min-width: 150px;
+}
+
+.user-table-row__cell--email {
+  color: var(--md-sys-color-on-surface-variant);
+  min-width: 200px;
+}
+
+.user-table-row__cell--contact {
+  color: var(--md-sys-color-on-surface-variant);
+  min-width: 140px;
+}
+
+.user-table-row__cell--gender {
+  min-width: 100px;
+}
+
+.user-table-row__cell--date {
+  color: var(--md-sys-color-on-surface-variant);
+  min-width: 120px;
+}
+
+.user-table-row__cell--actions {
+  width: 120px;
+}
+
+.user-table-row__badge {
+  display: inline-block;
+  padding: 2px var(--md-sys-spacing-2);
+  background-color: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  border-radius: var(--md-sys-shape-corner-small);
+  font-size: 11px;
+  font-weight: var(--md-sys-typescale-label-small-weight);
+  line-height: 1.2;
+}
+
+.user-table-row__actions {
+  display: flex;
+  gap: 0;
+  justify-content: flex-end;
+}
+
+.user-table-row__actions .md-icon-button {
+  width: 36px;
+  height: 36px;
+}
+
+.user-table-row__actions .md-icon-button .material-symbols-outlined {
+  font-size: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .user-table-row__cell--contact,
+  .user-table-row__cell--date {
+    display: none;
+  }
+}

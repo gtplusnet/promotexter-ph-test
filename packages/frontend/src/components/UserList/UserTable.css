@@ -1,0 +1,67 @@
+/* Material Design 3 Table */
+
+.user-table-container {
+  overflow-x: auto;
+  border-radius: var(--md-sys-shape-corner-medium);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--md-sys-color-surface);
+}
+
+.user-table__header {
+  background-color: var(--md-sys-color-surface-variant);
+}
+
+.user-table__header-cell {
+  padding: var(--md-sys-spacing-2) var(--md-sys-spacing-3);
+  text-align: left;
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  line-height: var(--md-sys-typescale-label-large-line-height);
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+  white-space: nowrap;
+}
+
+.user-table__header-cell:last-child {
+  text-align: right;
+}
+
+.user-table__body {
+  background-color: var(--md-sys-color-surface);
+}
+
+/* Empty State */
+.user-table-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--md-sys-spacing-16);
+  background-color: var(--md-sys-color-surface);
+  border-radius: var(--md-sys-shape-corner-medium);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.user-table-empty__icon {
+  font-size: 64px;
+  color: var(--md-sys-color-outline);
+  margin-bottom: var(--md-sys-spacing-4);
+}
+
+.user-table-empty__text {
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-body-large-size);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .user-table__header-cell:nth-child(4),
+  .user-table__header-cell:nth-child(6) {
+    display: none;
+  }
+}
