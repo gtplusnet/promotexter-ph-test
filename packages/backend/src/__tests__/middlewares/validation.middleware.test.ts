@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { validateCreateUser } from '../../middlewares/validation.middleware';
+import { validateCreateUser, validateListUsersQuery, validateGetUserById } from '../../middlewares/validation.middleware';
 import { createMockRequest, createMockResponse, createMockNext } from '../utils/test-helpers';
 
 describe('validateCreateUser', () => {
@@ -157,5 +157,234 @@ describe('validateCreateUser', () => {
 
     expect(next).toHaveBeenCalled();
     expect(req.validatedCreateUserBody.contactNumber).toBe('+1234567890');
+  });
+});
+
+describe('validateListUsersQuery', () => {
+  it('should call next() with valid query parameters', () => {
+    const req = createMockRequest({ query: { page: '1', limit: '10' } });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateListUsersQuery(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalled();
+  });
+
+  it('should attach validatedFilters to request', () => {
+    const req = createMockRequest({ query: { page: '2', limit: '5' } }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateListUsersQuery(req as Request, res as Response, next);
+
+    expect(req.validatedFilters).toEqual({
+      page: 2,
+      limit: 5,
+      includeDeleted: false,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    });
+  });
+
+  it('should use default values when parameters are not provided', () => {
+    const req = createMockRequest({ query: {} }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateListUsersQuery(req as Request, res as Response, next);
+
+    expect(req.validatedFilters.page).toBe(1);
+    expect(req.validatedFilters.limit).toBe(10);
+  });
+
+  it('should return 400 when page is less than 1', () => {
+    const req = createMockRequest({ query: { page: '0' } });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateListUsersQuery(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 when limit is less than 1', () => {
+    const req = createMockRequest({ query: { limit: '-5' } });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateListUsersQuery(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it('should return 400 when gender is invalid', () => {
+    const req = createMockRequest({ query: { gender: 'other' } });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateListUsersQuery(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it('should accept valid gender values', () => {
+    const req = createMockRequest({ query: { gender: 'male' } }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateListUsersQuery(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(req.validatedFilters.gender).toBe('male');
+  });
+
+  it('should return 400 when sortBy is invalid', () => {
+    const req = createMockRequest({ query: { sortBy: 'invalidField' } });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateListUsersQuery(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it('should accept valid sortBy values', () => {
+    const req = createMockRequest({ query: { sortBy: 'fullName' } }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateListUsersQuery(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(req.validatedFilters.sortBy).toBe('fullName');
+  });
+
+  it('should return 400 when sortOrder is invalid', () => {
+    const req = createMockRequest({ query: { sortOrder: 'invalid' } });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateListUsersQuery(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it('should accept valid sortOrder values and lowercase them', () => {
+    const req = createMockRequest({ query: { sortOrder: 'ASC' } }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateListUsersQuery(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalled();
+    expect(req.validatedFilters.sortOrder).toBe('asc');
+  });
+
+  it('should parse includeDeleted as boolean', () => {
+    const req = createMockRequest({ query: { includeDeleted: 'true' } }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateListUsersQuery(req as Request, res as Response, next);
+
+    expect(req.validatedFilters.includeDeleted).toBe(true);
+  });
+
+  it('should trim search parameter', () => {
+    const req = createMockRequest({ query: { search: '  john  ' } }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateListUsersQuery(req as Request, res as Response, next);
+
+    expect(req.validatedFilters.search).toBe('john');
+  });
+
+  it('should cap limit at max value', () => {
+    const req = createMockRequest({ query: { limit: '1000' } }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateListUsersQuery(req as Request, res as Response, next);
+
+    expect(req.validatedFilters.limit).toBe(100);
+  });
+});
+
+describe('validateGetUserById', () => {
+  it('should call next() with valid id parameter', () => {
+    const req = createMockRequest({ params: { id: '1' } });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateGetUserById(req as Request, res as Response, next);
+
+    expect(next).toHaveBeenCalled();
+  });
+
+  it('should attach validatedGetUserParams to request', () => {
+    const req = createMockRequest({ params: { id: '5' }, query: {} }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateGetUserById(req as Request, res as Response, next);
+
+    expect(req.validatedGetUserParams).toEqual({
+      id: 5,
+      includeDeleted: false,
+    });
+  });
+
+  it('should return 400 when id is not a number', () => {
+    const req = createMockRequest({ params: { id: 'abc' } });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateGetUserById(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('should return 400 when id is less than 1', () => {
+    const req = createMockRequest({ params: { id: '0' } });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateGetUserById(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it('should return 400 when id is negative', () => {
+    const req = createMockRequest({ params: { id: '-5' } });
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateGetUserById(req as Request, res as Response, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+  });
+
+  it('should parse includeDeleted query parameter', () => {
+    const req = createMockRequest({ params: { id: '1' }, query: { includeDeleted: 'true' } }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateGetUserById(req as Request, res as Response, next);
+
+    expect(req.validatedGetUserParams.includeDeleted).toBe(true);
+  });
+
+  it('should default includeDeleted to false when not provided', () => {
+    const req = createMockRequest({ params: { id: '1' }, query: {} }) as any;
+    const res = createMockResponse();
+    const next = createMockNext();
+
+    validateGetUserById(req as Request, res as Response, next);
+
+    expect(req.validatedGetUserParams.includeDeleted).toBe(false);
   });
 });
