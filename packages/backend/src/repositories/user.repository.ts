@@ -32,6 +32,26 @@ export class UserRepository {
   }
 
   /**
+   * Soft delete a user (set isDeleted to true)
+   */
+  async softDelete(id: number): Promise<User> {
+    return prisma.user.update({
+      where: { id },
+      data: { isDeleted: true },
+    });
+  }
+
+  /**
+   * Restore a soft-deleted user (set isDeleted to false)
+   */
+  async restore(id: number): Promise<User> {
+    return prisma.user.update({
+      where: { id },
+      data: { isDeleted: false },
+    });
+  }
+
+  /**
    * Find multiple users with filtering, pagination, and sorting
    */
   async findMany(options: FindManyUsersOptions): Promise<User[]> {

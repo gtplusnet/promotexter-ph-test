@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { userController } from '../controllers/user.controller';
-import { validateListUsersQuery, validateGetUserById, validateCreateUser, validateUpdateUser } from '../middlewares/validation.middleware';
+import { validateListUsersQuery, validateGetUserById, validateCreateUser, validateUpdateUser, validateUserIdParam } from '../middlewares/validation.middleware';
 import { asyncHandler } from '../middlewares/error.middleware';
 
 const router = Router();
@@ -73,6 +73,32 @@ router.put(
   '/:id',
   validateUpdateUser,
   asyncHandler((req, res) => userController.updateUser(req, res))
+);
+
+/**
+ * DELETE /api/users/:id
+ * Soft delete a user (set isDeleted to true)
+ *
+ * Path Parameters:
+ * - id: User ID (positive integer)
+ */
+router.delete(
+  '/:id',
+  validateUserIdParam,
+  asyncHandler((req, res) => userController.softDeleteUser(req, res))
+);
+
+/**
+ * POST /api/users/:id/restore
+ * Restore a soft-deleted user
+ *
+ * Path Parameters:
+ * - id: User ID (positive integer)
+ */
+router.post(
+  '/:id/restore',
+  validateUserIdParam,
+  asyncHandler((req, res) => userController.restoreUser(req, res))
 );
 
 export default router;

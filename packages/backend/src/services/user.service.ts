@@ -50,6 +50,40 @@ export class UserService {
   }
 
   /**
+   * Soft delete a user
+   */
+  async softDeleteUser(id: number): Promise<User> {
+    const user = await this.repository.findById(id);
+
+    if (!user) {
+      throw new ApiError(404, 'USER_NOT_FOUND', `User with ID ${id} not found`);
+    }
+
+    if (user.isDeleted) {
+      throw new ApiError(400, 'USER_ALREADY_DELETED', 'User is already deleted');
+    }
+
+    return this.repository.softDelete(id);
+  }
+
+  /**
+   * Restore a soft-deleted user
+   */
+  async restoreUser(id: number): Promise<User> {
+    const user = await this.repository.findById(id);
+
+    if (!user) {
+      throw new ApiError(404, 'USER_NOT_FOUND', `User with ID ${id} not found`);
+    }
+
+    if (!user.isDeleted) {
+      throw new ApiError(400, 'USER_NOT_DELETED', 'User is not deleted');
+    }
+
+    return this.repository.restore(id);
+  }
+
+  /**
    * Get a single user by ID
    */
   async getUserById(id: number, includeDeleted: boolean = false): Promise<User> {

@@ -50,6 +50,38 @@ export class UserController {
   }
 
   /**
+   * DELETE /api/users/:id - Soft delete a user
+   */
+  async softDeleteUser(req: Request, res: Response): Promise<void> {
+    const { id } = req.validatedUserIdParam!;
+    const user = await this.service.softDeleteUser(id);
+
+    const response: ApiResponse<UserDto> = {
+      success: true,
+      data: toUserDto(user),
+      message: 'User soft deleted successfully',
+    };
+
+    res.status(200).json(response);
+  }
+
+  /**
+   * POST /api/users/:id/restore - Restore a soft-deleted user
+   */
+  async restoreUser(req: Request, res: Response): Promise<void> {
+    const { id } = req.validatedUserIdParam!;
+    const user = await this.service.restoreUser(id);
+
+    const response: ApiResponse<UserDto> = {
+      success: true,
+      data: toUserDto(user),
+      message: 'User restored successfully',
+    };
+
+    res.status(200).json(response);
+  }
+
+  /**
    * GET /api/users/:id - Get a single user by ID
    */
   async getUserById(req: Request, res: Response): Promise<void> {

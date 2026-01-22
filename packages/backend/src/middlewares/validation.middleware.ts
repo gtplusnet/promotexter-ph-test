@@ -16,6 +16,11 @@ import {
 } from '../types/user';
 import { ApiResponse, ValidationErrorDetail } from '../types/common/api.types';
 
+// Simple user ID param type
+interface UserIdParam {
+  id: number;
+}
+
 // Extend Express Request to include validated data
 declare global {
   namespace Express {
@@ -25,6 +30,7 @@ declare global {
       validatedCreateUserBody?: CreateUserBody;
       validatedUpdateUserParams?: UpdateUserParams;
       validatedUpdateUserBody?: UpdateUserBody;
+      validatedUserIdParam?: UserIdParam;
     }
   }
 }
@@ -335,6 +341,41 @@ export function validateUpdateUser(
 
   req.validatedUpdateUserParams = { id };
   req.validatedUpdateUserBody = updateBody;
+
+  next();
+}
+
+/**
+ * Validates path parameter ID for endpoints that only need user ID
+ * Used for soft delete and restore endpoints
+ */
+export function validateUserIdParam(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  const errors: ValidationErrorDetail[] = [];
+  const idParam = req.params.id as string;
+  const id = parseInt(idParam, 10);
+
+  if (isNaN(id) || id < 1) {
+    errors.push({ field: 'id', message: 'ID must be a positive integer' });
+  }
+
+  if (errors.length > 0) {
+    const response: ApiResponse<null> = {
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Validation failed',
+        details: errors,
+      },
+    };
+    res.status(400).json(response);
+    return;
+  }
+
+  req.validatedUserIdParam = { id };
 
   next();
 }
