@@ -63,3 +63,15 @@ export interface CreateUserBody {
   contactNumber?: string | null;
   gender?: string | null;
 }
+
+// Update User types
+export interface UpdateUserParams {
+  id: number;
+}
+
+export interface UpdateUserBody {
+  fullName?: string;
+  email?: string;
+  contactNumber?: string | null;
+  gender?: string | null;
+}

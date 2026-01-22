@@ -34,6 +34,22 @@ export class UserController {
   }
 
   /**
+   * PUT /api/users/:id - Update an existing user
+   */
+  async updateUser(req: Request, res: Response): Promise<void> {
+    const { id } = req.validatedUpdateUserParams!;
+    const body = req.validatedUpdateUserBody!;
+    const user = await this.service.updateUser(id, body);
+
+    const response: ApiResponse<UserDto> = {
+      success: true,
+      data: toUserDto(user),
+    };
+
+    res.status(200).json(response);
+  }
+
+  /**
    * GET /api/users/:id - Get a single user by ID
    */
   async getUserById(req: Request, res: Response): Promise<void> {

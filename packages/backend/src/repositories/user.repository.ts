@@ -1,6 +1,6 @@
 import prisma from '../lib/prisma';
 import { User } from '@prisma/client';
-import { FindManyUsersOptions, CreateUserBody } from '../types/user';
+import { FindManyUsersOptions, CreateUserBody, UpdateUserBody } from '../types/user';
 
 export class UserRepository {
   /**
@@ -22,6 +22,13 @@ export class UserRepository {
    */
   async create(data: CreateUserBody): Promise<User> {
     return prisma.user.create({ data });
+  }
+
+  /**
+   * Update an existing user
+   */
+  async update(id: number, data: UpdateUserBody): Promise<User> {
+    return prisma.user.update({ where: { id }, data });
   }
 
   /**

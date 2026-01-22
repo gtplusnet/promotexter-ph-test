@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { userController } from '../controllers/user.controller';
-import { validateListUsersQuery, validateGetUserById, validateCreateUser } from '../middlewares/validation.middleware';
+import { validateListUsersQuery, validateGetUserById, validateCreateUser, validateUpdateUser } from '../middlewares/validation.middleware';
 import { asyncHandler } from '../middlewares/error.middleware';
 
 const router = Router();
@@ -54,6 +54,25 @@ router.get(
   '/:id',
   validateGetUserById,
   asyncHandler((req, res) => userController.getUserById(req, res))
+);
+
+/**
+ * PUT /api/users/:id
+ * Update an existing user (partial updates supported)
+ *
+ * Path Parameters:
+ * - id: User ID (positive integer)
+ *
+ * Request Body (all optional):
+ * - fullName: string (1-255 chars)
+ * - email: string (valid email, unique)
+ * - contactNumber: string (max 50 chars)
+ * - gender: string (male/female)
+ */
+router.put(
+  '/:id',
+  validateUpdateUser,
+  asyncHandler((req, res) => userController.updateUser(req, res))
 );
 
 export default router;

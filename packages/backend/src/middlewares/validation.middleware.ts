@@ -4,6 +4,8 @@ import {
   ListUsersFilters,
   GetUserByIdParams,
   CreateUserBody,
+  UpdateUserParams,
+  UpdateUserBody,
   Gender,
   SortByField,
   SortOrder,
@@ -21,6 +23,8 @@ declare global {
       validatedFilters?: ListUsersFilters;
       validatedGetUserParams?: GetUserByIdParams;
       validatedCreateUserBody?: CreateUserBody;
+      validatedUpdateUserParams?: UpdateUserParams;
+      validatedUpdateUserBody?: UpdateUserBody;
     }
   }
 }
@@ -242,4 +246,95 @@ export function validateCreateUser(
  */
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+/**
+ * Validates path parameter and request body for Update User endpoint
+ * Supports partial updates - all fields are optional
+ */
+export function validateUpdateUser(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  const errors: ValidationErrorDetail[] = [];
+  const body = req.body || {};
+
+  // Validate ID parameter
+  const idParam = req.params.id as string;
+  const id = parseInt(idParam, 10);
+
+  if (isNaN(id) || id < 1) {
+    errors.push({ field: 'id', message: 'ID must be a positive integer' });
+  }
+
+  // Validate fullName (optional, 1-255 chars if provided)
+  if (body.fullName !== undefined) {
+    if (typeof body.fullName !== 'string') {
+      errors.push({ field: 'fullName', message: 'Full name must be a string' });
+    } else if (body.fullName.trim().length === 0) {
+      errors.push({ field: 'fullName', message: 'Full name cannot be empty' });
+    } else if (body.fullName.length > 255) {
+      errors.push({ field: 'fullName', message: 'Full name must be at most 255 characters' });
+    }
+  }
+
+  // Validate email (optional, valid format if provided)
+  if (body.email !== undefined) {
+    if (typeof body.email !== 'string') {
+      errors.push({ field: 'email', message: 'Email must be a string' });
+    } else if (!isValidEmail(body.email)) {
+      errors.push({ field: 'email', message: 'Email must be a valid email address' });
+    }
+  }
+
+  // Validate contactNumber (optional, max 50 chars if provided)
+  if (body.contactNumber !== undefined && body.contactNumber !== null) {
+    if (typeof body.contactNumber !== 'string') {
+      errors.push({ field: 'contactNumber', message: 'Contact number must be a string' });
+    } else if (body.contactNumber.length > 50) {
+      errors.push({ field: 'contactNumber', message: 'Contact number must be at most 50 characters' });
+    }
+  }
+
+  // Validate gender (optional, must be male/female if provided)
+  if (body.gender !== undefined && body.gender !== null) {
+    const genderLower = typeof body.gender === 'string' ? body.gender.toLowerCase() : '';
+    if (!VALID_GENDERS.includes(genderLower as Gender)) {
+      errors.push({ field: 'gender', message: `Gender must be one of: ${VALID_GENDERS.join(', ')}` });
+    }
+  }
+
+  if (errors.length > 0) {
+    const response: ApiResponse<null> = {
+      success: false,
+      error: {
+        code: 'VALIDATION_ERROR',
+        message: 'Validation failed',
+        details: errors,
+      },
+    };
+    res.status(400).json(response);
+    return;
+  }
+
+  // Build update body with only provided fields
+  const updateBody: UpdateUserBody = {};
+  if (body.fullName !== undefined) {
+    updateBody.fullName = body.fullName.trim();
+  }
+  if (body.email !== undefined) {
+    updateBody.email = body.email.toLowerCase().trim();
+  }
+  if (body.contactNumber !== undefined) {
+    updateBody.contactNumber = body.contactNumber?.trim() || null;
+  }
+  if (body.gender !== undefined) {
+    updateBody.gender = body.gender?.toLowerCase() || null;
+  }
+
+  req.validatedUpdateUserParams = { id };
+  req.validatedUpdateUserBody = updateBody;
+
+  next();
 }

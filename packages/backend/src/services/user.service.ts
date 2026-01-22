@@ -7,6 +7,7 @@ import {
   UserOrderByInput,
   FindManyUsersOptions,
   CreateUserBody,
+  UpdateUserBody,
 } from '../types/user';
 import { PaginationInfo } from '../types/common/api.types';
 import { ApiError } from '../middlewares/error.middleware';
@@ -25,6 +26,27 @@ export class UserService {
     }
 
     return this.repository.create(data);
+  }
+
+  /**
+   * Update an existing user
+   */
+  async updateUser(id: number, data: UpdateUserBody): Promise<User> {
+    // Check if user exists and is not deleted
+    const user = await this.repository.findById(id);
+    if (!user || user.isDeleted) {
+      throw new ApiError(404, 'USER_NOT_FOUND', `User with ID ${id} not found`);
+    }
+
+    // If email is being updated, check for duplicates
+    if (data.email && data.email !== user.email) {
+      const existing = await this.repository.findByEmail(data.email);
+      if (existing) {
+        throw new ApiError(409, 'EMAIL_EXISTS', 'A user with this email already exists');
+      }
+    }
+
+    return this.repository.update(id, data);
   }
 
   /**
