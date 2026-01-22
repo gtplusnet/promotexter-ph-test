@@ -52,6 +52,13 @@ export class UserRepository {
   }
 
   /**
+   * Hard delete a user (permanently remove from database)
+   */
+  async hardDelete(id: number): Promise<User> {
+    return prisma.user.delete({ where: { id } });
+  }
+
+  /**
    * Find multiple users with filtering, pagination, and sorting
    */
   async findMany(options: FindManyUsersOptions): Promise<User[]> {

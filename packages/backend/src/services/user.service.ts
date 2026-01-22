@@ -84,6 +84,19 @@ export class UserService {
   }
 
   /**
+   * Hard delete a user (permanently remove from database)
+   */
+  async hardDeleteUser(id: number): Promise<void> {
+    const user = await this.repository.findById(id);
+
+    if (!user) {
+      throw new ApiError(404, 'USER_NOT_FOUND', `User with ID ${id} not found`);
+    }
+
+    await this.repository.hardDelete(id);
+  }
+
+  /**
    * Get a single user by ID
    */
   async getUserById(id: number, includeDeleted: boolean = false): Promise<User> {

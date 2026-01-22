@@ -82,6 +82,22 @@ export class UserController {
   }
 
   /**
+   * DELETE /api/users/:id/permanent - Permanently delete a user
+   */
+  async hardDeleteUser(req: Request, res: Response): Promise<void> {
+    const { id } = req.validatedUserIdParam!;
+    await this.service.hardDeleteUser(id);
+
+    const response: ApiResponse<null> = {
+      success: true,
+      data: null,
+      message: 'User permanently deleted',
+    };
+
+    res.status(200).json(response);
+  }
+
+  /**
    * GET /api/users/:id - Get a single user by ID
    */
   async getUserById(req: Request, res: Response): Promise<void> {

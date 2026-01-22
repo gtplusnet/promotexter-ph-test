@@ -41,6 +41,32 @@ router.post(
 );
 
 /**
+ * POST /api/users/:id/restore
+ * Restore a soft-deleted user
+ *
+ * Path Parameters:
+ * - id: User ID (positive integer)
+ */
+router.post(
+  '/:id/restore',
+  validateUserIdParam,
+  asyncHandler((req, res) => userController.restoreUser(req, res))
+);
+
+/**
+ * DELETE /api/users/:id/permanent
+ * Permanently delete a user (irreversible)
+ *
+ * Path Parameters:
+ * - id: User ID (positive integer)
+ */
+router.delete(
+  '/:id/permanent',
+  validateUserIdParam,
+  asyncHandler((req, res) => userController.hardDeleteUser(req, res))
+);
+
+/**
  * GET /api/users/:id
  * Get a single user by ID
  *
@@ -86,19 +112,6 @@ router.delete(
   '/:id',
   validateUserIdParam,
   asyncHandler((req, res) => userController.softDeleteUser(req, res))
-);
-
-/**
- * POST /api/users/:id/restore
- * Restore a soft-deleted user
- *
- * Path Parameters:
- * - id: User ID (positive integer)
- */
-router.post(
-  '/:id/restore',
-  validateUserIdParam,
-  asyncHandler((req, res) => userController.restoreUser(req, res))
 );
 
 export default router;
