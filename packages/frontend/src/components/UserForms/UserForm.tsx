@@ -7,12 +7,14 @@ interface UserFormProps {
   formData: UserFormData;
   onChange: (data: UserFormData) => void;
   errors?: Partial<Record<keyof UserFormData, string>>;
+  disabled?: boolean;
 }
 
 export const UserForm: React.FC<UserFormProps> = ({
   formData,
   onChange,
   errors = {},
+  disabled = false,
 }) => {
   const handleChange = (field: keyof UserFormData) => (
     e: React.ChangeEvent<HTMLInputElement>
@@ -33,6 +35,7 @@ export const UserForm: React.FC<UserFormProps> = ({
           onChange={handleChange('fullName')}
           error={errors.fullName}
           required
+          disabled={disabled}
         />
       </div>
 
@@ -44,6 +47,7 @@ export const UserForm: React.FC<UserFormProps> = ({
           onChange={handleChange('email')}
           error={errors.email}
           required
+          disabled={disabled}
         />
       </div>
 
@@ -54,6 +58,7 @@ export const UserForm: React.FC<UserFormProps> = ({
           value={formData.contactNumber}
           onChange={handleChange('contactNumber')}
           error={errors.contactNumber}
+          disabled={disabled}
         />
       </div>
 
@@ -68,6 +73,7 @@ export const UserForm: React.FC<UserFormProps> = ({
               checked={formData.gender === 'male'}
               onChange={handleChange('gender')}
               className="user-form__radio"
+              disabled={disabled}
             />
             <span>Male</span>
           </label>
@@ -79,6 +85,7 @@ export const UserForm: React.FC<UserFormProps> = ({
               checked={formData.gender === 'female'}
               onChange={handleChange('gender')}
               className="user-form__radio"
+              disabled={disabled}
             />
             <span>Female</span>
           </label>
