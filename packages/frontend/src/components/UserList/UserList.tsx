@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import type { User, Gender, SortByField, SortOrder } from '../../types/user.types';
-import { mockUsers } from '../../data/mockUsers';
+import type { User, Gender, SortByField, SortOrder, ListUsersFilters } from '../../types/user.types';
+import { useUsers } from '../../hooks/useUsers';
 import { SearchBar } from '../UserControls/SearchBar';
 import { FilterBar } from '../UserControls/FilterBar';
 import { Pagination } from '../UserControls/Pagination';
 import { UserTable } from './UserTable';
+import { UserTableSkeleton } from './UserTableSkeleton';
+import { UserTableError } from './UserTableError';
 import { FAB } from '../Common/FAB';
 import { Button } from '../Common/Button';
 import './UserList.css';
@@ -22,25 +24,49 @@ export const UserList: React.FC<UserListProps> = ({
   onDeleteUser,
   onRestoreUser,
 }) => {
-  const [search, setSearch] = useState('');
-  const [gender, setGender] = useState<Gender | 'all'>('all');
-  const [includeDeleted, setIncludeDeleted] = useState(false);
-  const [sortBy, setSortBy] = useState<SortByField>('createdAt');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
-  const [currentPage, setCurrentPage] = useState(1);
-
-  const ITEMS_PER_PAGE = 10;
-
-  // Filter and sort users (non-functional for now, just shows all users)
-  const filteredUsers = mockUsers.filter((user) => {
-    if (!includeDeleted && user.isDeleted) return false;
-    return true;
+  const [filters, setFilters] = useState<ListUsersFilters>({
+    page: 1,
+    limit: 10,
+    search: '',
+    gender: 'all',
+    includeDeleted: false,
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
   });
 
-  // Pagination
-  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const { data, isLoading, isError, error, refetch } = useUsers(filters);
+
+  const handleSearchChange = (search: string) => {
+    setFilters((prev) => ({ ...prev, search, page: 1 }));
+  };
+
+  const handleGenderChange = (gender: Gender | 'all') => {
+    setFilters((prev) => ({ ...prev, gender, page: 1 }));
+  };
+
+  const handleIncludeDeletedChange = (includeDeleted: boolean) => {
+    setFilters((prev) => ({ ...prev, includeDeleted, page: 1 }));
+  };
+
+  const handleSortByChange = (sortBy: SortByField) => {
+    setFilters((prev) => ({ ...prev, sortBy, page: 1 }));
+  };
+
+  const handleSortOrderChange = (sortOrder: SortOrder) => {
+    setFilters((prev) => ({ ...prev, sortOrder, page: 1 }));
+  };
+
+  const handlePageChange = (page: number) => {
+    setFilters((prev) => ({ ...prev, page }));
+  };
+
+  const users = data?.users ?? [];
+  const pagination = data?.pagination ?? {
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 1,
+  };
 
   return (
     <div className="user-list">
@@ -60,35 +86,73 @@ export const UserList: React.FC<UserListProps> = ({
       </header>
 
       <div className="user-list__controls">
-        <SearchBar value={search} onChange={setSearch} />
+        <SearchBar value={filters.search} onChange={handleSearchChange} />
         <FilterBar
-          gender={gender}
-          onGenderChange={setGender}
-          includeDeleted={includeDeleted}
-          onIncludeDeletedChange={setIncludeDeleted}
-          sortBy={sortBy}
-          onSortByChange={setSortBy}
-          sortOrder={sortOrder}
-          onSortOrderChange={setSortOrder}
+          gender={filters.gender}
+          onGenderChange={handleGenderChange}
+          includeDeleted={filters.includeDeleted}
+          onIncludeDeletedChange={handleIncludeDeletedChange}
+          sortBy={filters.sortBy}
+          onSortByChange={handleSortByChange}
+          sortOrder={filters.sortOrder}
+          onSortOrderChange={handleSortOrderChange}
         />
       </div>
 
       <div className="user-list__content">
-        <UserTable
-          users={paginatedUsers}
-          onEdit={onEditUser}
-          onDelete={onDeleteUser}
-          onRestore={onRestoreUser}
-        />
+        {isLoading ? (
+          <table className="user-table">
+            <thead className="user-table__head">
+              <tr>
+                <th className="user-table__header">ID</th>
+                <th className="user-table__header">Full Name</th>
+                <th className="user-table__header">Email</th>
+                <th className="user-table__header">Contact</th>
+                <th className="user-table__header">Gender</th>
+                <th className="user-table__header">Created</th>
+                <th className="user-table__header">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <UserTableSkeleton />
+            </tbody>
+          </table>
+        ) : isError ? (
+          <table className="user-table">
+            <thead className="user-table__head">
+              <tr>
+                <th className="user-table__header">ID</th>
+                <th className="user-table__header">Full Name</th>
+                <th className="user-table__header">Email</th>
+                <th className="user-table__header">Contact</th>
+                <th className="user-table__header">Gender</th>
+                <th className="user-table__header">Created</th>
+                <th className="user-table__header">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <UserTableError error={error as Error} onRetry={() => refetch()} />
+            </tbody>
+          </table>
+        ) : (
+          <UserTable
+            users={users}
+            onEdit={onEditUser}
+            onDelete={onDeleteUser}
+            onRestore={onRestoreUser}
+          />
+        )}
       </div>
 
-      <div className="user-list__pagination">
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
-      </div>
+      {!isLoading && !isError && (
+        <div className="user-list__pagination">
+          <Pagination
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            onPageChange={handlePageChange}
+          />
+        </div>
+      )}
 
       <FAB icon="add" label="Create user" onClick={onCreateUser} />
     </div>

@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import cors from 'cors';
 import dotenv from 'dotenv';
 import userRoutes from './routes/user.routes';
 import { errorHandler } from './middlewares/error.middleware';
@@ -9,6 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+app.use(cors());
 app.use(express.json());
 
 // Request logging
